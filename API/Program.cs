@@ -1,13 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using shared.Model; 
+using shared.Model;
+using API.Data;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContext<PostContext>(options =>
     options.UseSqlite("Data Source=kreddit.db")); 
 
 
@@ -28,27 +29,27 @@ app.UseHttpsRedirection();
 // Opret databasen ved opstart
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<PostContext>();
     db.Database.EnsureCreated(); // Opretter databasen og tabellerne
 }
 
 // Endpoints for API'en
 // Hent alle posts
-app.MapGet("/posts", async (AppDbContext db) =>
+app.MapGet("/posts", async (PostContext db) =>
 {
     var posts = await db.Posts.ToArrayAsync();
     return Results.Ok(posts);
 });
 
 // Hent et specifikt post
-app.MapGet("/posts/{id}", async (AppDbContext db, int id) =>
+app.MapGet("/posts/{id}", async (PostContext db, int id) =>
 {
     var post = await db.Posts.FindAsync(id);
     return post != null ? Results.Ok(post) : Results.NotFound();
 });
 
 // Opret en kommentar til et post
-app.MapPost("/posts/{postId}/comments", async (AppDbContext db, int postId, HttpRequest request) =>
+app.MapPost("/posts/{postId}/comments", async (PostContext db, int postId, HttpRequest request) =>
 {
     var json = await new StreamReader(request.Body).ReadToEndAsync();
     var data = System.Text.Json.JsonSerializer.Deserialize<CommentRequest>(json);
@@ -61,7 +62,7 @@ app.MapPost("/posts/{postId}/comments", async (AppDbContext db, int postId, Http
     {
         Content = data.Content,
         PostId = postId,
-        UserId = data.UserId
+        User = data.UserId
     };
     db.Comments.Add(comment);
     await db.SaveChangesAsync();
@@ -69,7 +70,7 @@ app.MapPost("/posts/{postId}/comments", async (AppDbContext db, int postId, Http
 });
 
 // Upvote et post
-app.MapPut("/posts/{id}/upvote", async (AppDbContext db, int id) =>
+app.MapPut("/posts/{id}/upvote", async (PostContext db, int id) =>
 {
     var post = await db.Posts.FindAsync(id);
     if (post == null) return Results.NotFound();
@@ -80,14 +81,3 @@ app.MapPut("/posts/{id}/upvote", async (AppDbContext db, int id) =>
 
 // Kør appen
 app.Run();
-
-// Nødvendige klasser
-public class AppDbContext : DbContext
-{
-    public DbSet<Post> Posts => Set<Post>();
-    public DbSet<Comment> Comments => Set<Comment>();
-
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-}
-
-public record CommentRequest(string Content, int UserId);
