@@ -68,4 +68,54 @@ public class ApiService
         // Return the updated post (vote increased)
         return updatedPost;
     }
+
+    public async Task<Post> DownvotePost (int id )
+    {
+        string url = $"{baseAPI}posts/{id}/downvote/";
+
+        HttpResponseMessage msg = await http.PutAsJsonAsync(url, "");
+
+        string json = msg.Content.ReadAsStringAsync().Result;
+
+        Post? updatedPost = JsonSerializer.Deserialize<Post>(json, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        return updatedPost;
+
+
+    }
+
+    public async Task<Comment> DownvoteComment (int postId, int commentId)
+    {
+        string url = $"{baseAPI}posts/{postId}/comments/{commentId}/downvote";
+
+        HttpResponseMessage msg = await http.PutAsJsonAsync(url, "");
+
+        string json = msg.Content.ReadAsStringAsync().Result;
+
+        Comment? updatedComment = JsonSerializer.Deserialize<Comment>(json, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        return updatedComment;
+    }
+
+    public async Task<Comment> UpvoteComment (int postId, int commentId)
+    {
+        string url = $"{baseAPI}posts/{postId}/comments/{commentId}/upvote";
+
+        HttpResponseMessage msg = await http.PutAsJsonAsync(url, "");
+
+        string json = msg.Content.ReadAsStringAsync().Result;
+
+        Comment? updatedComment = JsonSerializer.Deserialize<Comment>(json, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        return updatedComment;
+    }
 }
