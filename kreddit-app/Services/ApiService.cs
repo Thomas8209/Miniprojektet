@@ -10,7 +10,7 @@ public class ApiService
 {
     private readonly HttpClient http;
     private readonly IConfiguration configuration;
-    private readonly string baseAPI = "http://localhost:5185";
+    private readonly string baseAPI = "http://localhost:5185/api/";
 
     public ApiService(HttpClient http, IConfiguration configuration)
     {
