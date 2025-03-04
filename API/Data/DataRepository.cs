@@ -2,11 +2,11 @@
 
 namespace API.Data
 {
-    public class DataService
+    public class DataRepository
     {
         private PostContext db { get; }
 
-        public DataService(PostContext db)
+        public DataRepository(PostContext db)
         {
             this.db = db;
 
