@@ -14,6 +14,8 @@ builder.Services.AddDbContext<PostContext>(options =>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+// Tilføj DataService så den kan bruges i endpoints
+builder.Services.AddScoped<DataRepository>();
 
 var app = builder.Build();
 
@@ -35,10 +37,17 @@ using (var scope = app.Services.CreateScope())
 
 // Endpoints for API'en
 // Hent alle posts
+
+// DataService fås via "Dependency Injection" (DI)
+app.MapGet("/", (DataRepository repo) =>
+{
+    return new { message = "Hello World!" };
+});
+
+
 app.MapGet("/posts", async (PostContext db) =>
 {
-    var posts = await db.Posts.ToArrayAsync();
-    return Results.Ok(posts);
+    return await
 });
 
 // Hent et specifikt post
