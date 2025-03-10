@@ -28,7 +28,7 @@ else
 {
     <div class="contents">
         <h4>@Post.Title</h4>
-        <p><strong>User: @Post.User.Username, Votes: @(Post.Upvotes - Post.Downvotes)</strong></p>
+        <p><strong>User: @Post.User.Username, Votes: @Post.Score</strong></p>
         <p>@Post.Content</p>
     </div>
 
@@ -45,7 +45,7 @@ else
             <tr>
                 <td>@comment.User.Username</td>
                 <td>@comment.Content</td>
-                <td>@(comment.Upvotes - comment.Downvotes)</td>
+                <td>@comment.Score</td>
                 <td><button @onclick="() => Upvote(comment.Id)">Upvote</button></td>
                 <td><button @onclick="() => Downvote(comment.Id)">Downvote</button></td>
             </tr>
@@ -68,13 +68,18 @@ else
     {
         Post = await apiService.GetPost(PostId);
     }
+
     private async void Upvote(int id)
     {
-        var updatedComment = await apiService.UpvoteComment(id);
+        var updatedComment = await apiService.UpvoteComment(PostId, id); 
+        Post = await apiService.GetPost(PostId); 
+        StateHasChanged(); 
     }
 
     private async void Downvote(int id)
     {
-        var updatedComment = await apiService.DownvoteComment(id);
+        var updatedComment = await apiService.DownvoteComment(PostId, id); 
+        Post = await apiService.GetPost(PostId); 
+        StateHasChanged(); 
     }
 }

@@ -28,7 +28,7 @@ else
                 -->
                 <td><a href="/post/@post.Id">@post.Title</a></td>
                 <td>@post.Content</td>
-                <td>@(post.Upvotes - post.Downvotes)</td>
+                <td>@post.Score</td>
                 <td><button @onclick="() => Upvote(post.Id)">Upvote</button></td>
                 <td><button @onclick="() => Downvote(post.Id)">Downvote</button></td>
             </tr>
@@ -50,10 +50,14 @@ else
     private async void Upvote(int id)
     {
         var updatedPost = await apiService.UpvotePost(id);
+        posts = await apiService.GetPosts(); 
+        StateHasChanged(); 
     }
 
     private async void Downvote(int id)
     {
         var updatedPost = await apiService.DownvotePost(id);
+        posts = await apiService.GetPosts(); 
+        StateHasChanged(); 
     }
 }

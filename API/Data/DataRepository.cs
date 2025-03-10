@@ -60,5 +60,72 @@ namespace API.Data
 
             return newcomment;
         }
+        public Post UpvotePost(int id)
+        {
+            var post = db.Posts.FirstOrDefault(p => p.Id == id);
+            if (post == null)
+            {
+                throw new Exception("Post not found");
+            }
+
+            post.Score += 1; 
+            db.SaveChanges();
+
+            return post;
+        }
+
+        public Post DownvotePost(int id)
+        {
+            var post = db.Posts.FirstOrDefault(p => p.Id == id);
+            if (post == null)
+            {
+                throw new Exception("Post not found");
+            }
+
+            post.Score -= 1; 
+            db.SaveChanges();
+
+            return post;
+        }
+
+        public Comment UpvoteComment(int postId, int commentId)
+        {
+            var post = db.Posts.Include(p => p.Comments).FirstOrDefault(p => p.Id == postId);
+            if (post == null)
+            {
+                throw new Exception("Post not found");
+            }
+
+            var comment = post.Comments.FirstOrDefault(c => c.Id == commentId);
+            if (comment == null)
+            {
+                throw new Exception("Comment not found");
+            }
+
+            comment.Score += 1; 
+            db.SaveChanges();
+
+            return comment;
+        }
+
+        public Comment DownvoteComment(int postId, int commentId)
+        {
+            var post = db.Posts.Include(p => p.Comments).FirstOrDefault(p => p.Id == postId);
+            if (post == null)
+            {
+                throw new Exception("Post not found");
+            }
+
+            var comment = post.Comments.FirstOrDefault(c => c.Id == commentId);
+            if (comment == null)
+            {
+                throw new Exception("Comment not found");
+            }
+
+            comment.Score -= 1; 
+            db.SaveChanges();
+
+            return comment;
+        }
     }
 };
