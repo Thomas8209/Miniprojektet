@@ -29,8 +29,9 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<PostContext>();
     db.Database.Migrate(); 
-    var dataRepository = scope.ServiceProvider.GetRequiredService<DataRepository>();
-    dataRepository.SeedData();
+
+    var repo = scope.ServiceProvider.GetRequiredService<DataRepository>();
+    repo.SeedData(); 
 }
 
 
