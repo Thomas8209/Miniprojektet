@@ -10,7 +10,7 @@ public class Comment
     {
         Content = content;
         Score = score;
-        User = user;
+        User = user ?? new User();
     }
     public Comment() {
         Id = 0;

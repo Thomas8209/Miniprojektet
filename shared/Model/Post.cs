@@ -18,7 +18,7 @@ public class Post {
         Title = "";
         Content = "";
         Score = 0;
-        User = null;
+        User = new User(); 
     }
 
     public override string ToString()

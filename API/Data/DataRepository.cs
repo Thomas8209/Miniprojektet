@@ -69,15 +69,24 @@ namespace API.Data
             }
         }
 
-
         public async Task<List<Post>> GetPosts()
         {
-            return await db.Posts.ToListAsync();
+            return await db.Posts
+                .Include(p => p.User)       
+                .Include(p => p.Comments)   
+                .ThenInclude(c => c.User)   
+                .ToListAsync();
         }
+
         public Post GetPost(int id)
         {
-            return db.Posts.Include(p => p.Comments).FirstOrDefault(p => p.Id == id);
+            return db.Posts
+                .Include(p => p.User)       
+                .Include(p => p.Comments)   
+                .ThenInclude(c => c.User)   
+                .FirstOrDefault(p => p.Id == id);
         }
+
 
         public Post CreatePost(Post article) {
 
