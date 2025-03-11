@@ -27,9 +27,12 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
+    var db = scope.ServiceProvider.GetRequiredService<PostContext>();
+    db.Database.Migrate(); 
     var dataRepository = scope.ServiceProvider.GetRequiredService<DataRepository>();
     dataRepository.SeedData();
 }
+
 
 app.UseHttpsRedirection();
 app.UseCors(AllowAll);
