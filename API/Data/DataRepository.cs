@@ -17,7 +17,58 @@ namespace API.Data
 
         public void SeedData()
         {
+            Console.WriteLine("🚀 Kører SeedData...");
+            // Tjek om der findes en bruger
+            if (!db.Users.Any())
+            {
+                db.Users.Add(new User { Username = "Thomas" });
+                db.SaveChanges();
+            }
+
+            // Hent brugeren (nu hvor vi er sikre på, at der er en)
+            User user = db.Users.FirstOrDefault(u => u.Username == "Thomas")!;
+
+            // Tjek om der findes posts
+            if (!db.Posts.Any())
+            {
+                var post1 = new Post
+                {
+                    Title = "Hvad er den bedste burger i Danmark?",
+                    Content = "Jeg har prøvet mange forskellige burgere, men vil gerne høre jeres bud!",
+                    Score = 12,
+                    User = user
+                };
+
+                var post2 = new Post
+                {
+                    Title = "Hvordan laver man den perfekte kop kaffe?",
+                    Content = "Er det aeropress, filterkaffe eller espresso? Jeg vil gerne høre jeres mening!",
+                    Score = 8,
+                    User = user
+                };
+
+                db.Posts.AddRange(post1, post2);
+                db.SaveChanges();
+
+                // 🔥 Tilføj kommentarer direkte til posts
+                post1.Comments.Add(new Comment
+                {
+                    Content = "Burger Shack i Aarhus laver den bedste burger!",
+                    Score = 4,
+                    User = user
+                });
+
+                post2.Comments.Add(new Comment
+                {
+                    Content = "Aeropress med friskkværnede bønner er vejen frem!",
+                    Score = 6,
+                    User = user
+                });
+
+                db.SaveChanges(); // Gem kommentarer sammen med posts
+            }
         }
+
 
         public async Task<List<Post>> GetPosts()
         {

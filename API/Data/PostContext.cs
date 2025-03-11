@@ -5,11 +5,12 @@ namespace API.Data
 {
     public class PostContext : DbContext
     {
+        public DbSet<User> Users { get; set; } 
         public DbSet<Post> Posts { get; set; }
-
+        public DbSet<Comment> Comments { get; set; } 
         public string DbPath { get; }
 
-        public PostContext()
+        public PostContext(DbContextOptions<PostContext> options) : base(options)
         {
             DbPath = "bin/Post.db";
         }

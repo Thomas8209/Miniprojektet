@@ -25,6 +25,12 @@ builder.Services.AddScoped<DataRepository>();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dataRepository = scope.ServiceProvider.GetRequiredService<DataRepository>();
+    dataRepository.SeedData();
+}
+
 app.UseHttpsRedirection();
 app.UseCors(AllowAll);
 
