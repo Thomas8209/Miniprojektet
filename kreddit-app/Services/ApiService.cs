@@ -10,13 +10,12 @@ public class ApiService
 {
     private readonly HttpClient http;
     private readonly IConfiguration configuration;
-    private readonly string baseAPI = "http://localhost:5185/api/";
-
+    private readonly string baseAPI = "http://localhost:5185/api/"
+;
     public ApiService(HttpClient http, IConfiguration configuration)
     {
         this.http = http;
         this.configuration = configuration;
-        this.baseAPI = configuration["base_api"];
     }
 
     public async Task<Post[]> GetPosts()
@@ -55,7 +54,8 @@ public class ApiService
         string url = $"{baseAPI}posts/{id}/upvote/";
 
         // Post JSON to API, save the HttpResponseMessage
-        HttpResponseMessage msg = await http.PutAsJsonAsync(url, "");
+        HttpResponseMessage msg = await http.PostAsync(url, null);
+
 
         // Get the JSON string from the response
         string json = msg.Content.ReadAsStringAsync().Result;
@@ -73,7 +73,8 @@ public class ApiService
     {
         string url = $"{baseAPI}posts/{id}/downvote/";
 
-        HttpResponseMessage msg = await http.PutAsJsonAsync(url, "");
+        HttpResponseMessage msg = await http.PostAsync(url, null);
+
 
         string json = msg.Content.ReadAsStringAsync().Result;
 
@@ -91,7 +92,7 @@ public class ApiService
     {
         string url = $"{baseAPI}posts/{postId}/comments/{commentId}/downvote";
 
-        HttpResponseMessage msg = await http.PutAsJsonAsync(url, "");
+        HttpResponseMessage msg = await http.PostAsync(url, null);
 
         string json = msg.Content.ReadAsStringAsync().Result;
 
@@ -107,7 +108,7 @@ public class ApiService
     {
         string url = $"{baseAPI}posts/{postId}/comments/{commentId}/upvote";
 
-        HttpResponseMessage msg = await http.PutAsJsonAsync(url, "");
+        HttpResponseMessage msg = await http.PostAsync(url, null);
 
         string json = msg.Content.ReadAsStringAsync().Result;
 
