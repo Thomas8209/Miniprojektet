@@ -1,92 +1,87 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using shared.Model;
 using API.Data;
-
+using shared.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Sætter CORS så API kan bruges fra andre domæner
+var AllowAll = "_AllowAll";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: AllowAll, policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
+// tilføjer DBcontext for databaseforbindelse
 builder.Services.AddDbContext<PostContext>(options =>
-    options.UseSqlite("Data Source=kreddit.db")); 
+    options.UseSqlite(builder.Configuration.GetConnectionString("ContextSQLite")));
 
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-// Tilføj DataService så den kan bruges i endpoints
+//  tilføjer DataRepository, så det kan bruges i endpoints
 builder.Services.AddScoped<DataRepository>();
 
 var app = builder.Build();
 
-// Konfigurer HTTP-pipelinen
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
 app.UseHttpsRedirection();
+app.UseCors(AllowAll);
 
-// Opret databasen ved opstart
-using (var scope = app.Services.CreateScope())
+// API Endpoints
+
+// Test route
+app.MapGet("/", () => new { message = "Hej Verden" });
+
+// Get all posts
+app.MapGet("/api/posts", async (DataRepository repo) =>
 {
-    var db = scope.ServiceProvider.GetRequiredService<PostContext>();
-    db.Database.EnsureCreated(); // Opretter databasen og tabellerne
-}
+    return await repo.GetPosts();
+});
 
-// Endpoints for API'en
-// Hent alle posts
-
-// DataService fås via "Dependency Injection" (DI)
-app.MapGet("/", (DataRepository repo) =>
+// Get a single post by ID
+app.MapGet("/api/posts/{id}", (DataRepository repo, int id) =>
 {
-    return new { message = "Hello World!" };
+    return (repo.GetPost(id) is Post post)
+        ? Results.Ok(post)
+        : Results.NotFound(new { message = "Post not found" });
 });
 
 
-app.MapGet("/posts", async (PostContext db) =>
+// Create a new post
+app.MapPost("/api/posts", (DataRepository repo, Post post) =>
 {
-    return await
+    return repo.CreatePost(post);
 });
 
-// Hent et specifikt post
-app.MapGet("/posts/{id}", async (PostContext db, int id) =>
+// Upvote a post
+app.MapPost("/api/posts/{id}/upvote", (DataRepository repo, int id) =>
 {
-    var post = await db.Posts.FindAsync(id);
-    return post != null ? Results.Ok(post) : Results.NotFound();
+    return repo.UpvotePost(id);
 });
 
-// Opret en kommentar til et post
-app.MapPost("/posts/{postId}/comments", async (PostContext db, int postId, HttpRequest request) =>
+// Downvote a post
+app.MapPost("/api/posts/{id}/downvote", (DataRepository repo, int id) =>
 {
-    var json = await new StreamReader(request.Body).ReadToEndAsync();
-    var data = System.Text.Json.JsonSerializer.Deserialize<CommentRequest>(json);
-    if (data == null || string.IsNullOrEmpty(data.Content)) return Results.BadRequest();
-
-    var post = await db.Posts.FindAsync(postId);
-    if (post == null) return Results.NotFound();
-
-    var comment = new Comment
-    {
-        Content = data.Content,
-        PostId = postId,
-        User = data.UserId
-    };
-    db.Comments.Add(comment);
-    await db.SaveChangesAsync();
-    return Results.Created($"/posts/{postId}/comments/{comment.Id}", comment);
+    return repo.DownvotePost(id);
 });
 
-// Upvote et post
-app.MapPut("/posts/{id}/upvote", async (PostContext db, int id) =>
+// Add a comment to a post
+app.MapPost("/api/posts/{id}/comments", (DataRepository repo, int id, Comment comment) =>
 {
-    var post = await db.Posts.FindAsync(id);
-    if (post == null) return Results.NotFound();
-    post.Votes++;
-    await db.SaveChangesAsync();
-    return Results.Ok(post);
+    return repo.CreateComment(id, comment);
 });
 
-// Kør appen
+// Upvote a comment
+app.MapPost("/api/posts/{postId}/comments/{commentId}/upvote", (DataRepository repo, int postId, int commentId) =>
+{
+    return repo.UpvoteComment(postId, commentId);
+});
+
+// Downvote a comment
+app.MapPost("/api/posts/{postId}/comments/{commentId}/downvote", (DataRepository repo, int postId, int commentId) =>
+{
+    return repo.DownvoteComment(postId, commentId);
+});
+
 app.Run();
